@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Renesas R-Car S4 — Device Tree Bindings</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      color: #1a1a2e;
+      background: #f4f6fb;
+    }
+
+    /* ── Layout ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0;
+      width: 240px; height: 100vh;
+      background: #0f3460;
+      color: #cdd6f4;
+      padding: 28px 0 20px;
+      overflow-y: auto;
+    }
+    nav h2 {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #89b4fa;
+      padding: 0 20px 12px;
+      border-bottom: 1px solid #1e3a5f;
+    }
+    nav ul { list-style: none; padding: 10px 0; }
+    nav ul li a {
+      display: block;
+      padding: 7px 20px;
+      color: #cdd6f4;
+      text-decoration: none;
+      font-size: 13.5px;
+    }
+    nav ul li a:hover { background: #16213e; color: #89b4fa; }
+    nav ul li.section {
+      padding: 14px 20px 4px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: #6272a4;
+    }
+
+    main {
+      margin-left: 240px;
+      padding: 48px 52px 80px;
+      max-width: 960px;
+    }
+
+    /* ── Typography ── */
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #0f3460;
+      border-bottom: 3px solid #89b4fa;
+      padding-bottom: 12px;
+      margin-bottom: 24px;
+    }
+    h2 {
+      font-size: 21px;
+      font-weight: 700;
+      color: #0f3460;
+      margin: 48px 0 16px;
+      padding-left: 12px;
+      border-left: 4px solid #89b4fa;
+    }
+    h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #16213e;
+      margin: 28px 0 10px;
+    }
+    p { margin-bottom: 14px; }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      vertical-align: middle;
+      margin-left: 6px;
+    }
+    .badge-required { background: #f38ba8; color: #1e0010; }
+    .badge-optional { background: #a6e3a1; color: #001a00; }
+    .badge-new      { background: #89b4fa; color: #001040; }
+    .badge-updated  { background: #fab387; color: #1a0800; }
+
+    /* ── Info box ── */
+    .info, .note, .warning {
+      border-radius: 6px;
+      padding: 14px 18px;
+      margin: 20px 0;
+      font-size: 14px;
+    }
+    .info    { background: #dde8fb; border-left: 4px solid #89b4fa; }
+    .note    { background: #e8fbdd; border-left: 4px solid #a6e3a1; }
+    .warning { background: #fbf3dd; border-left: 4px solid #f9e2af; }
+    .info strong, .note strong, .warning strong { display: block; margin-bottom: 4px; }
+
+    /* ── Property table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 24px;
+      font-size: 14px;
+    }
+    thead tr { background: #0f3460; color: #cdd6f4; }
+    thead th { padding: 10px 14px; text-align: left; font-weight: 600; }
+    tbody tr:nth-child(odd)  { background: #edf1fb; }
+    tbody tr:nth-child(even) { background: #f8f9ff; }
+    tbody td { padding: 9px 14px; vertical-align: top; }
+    tbody td:first-child { font-family: "SFMono-Regular", Consolas, monospace; font-size: 13px; color: #0f3460; white-space: nowrap; }
+
+    /* ── Code blocks ── */
+    pre {
+      background: #1e2030;
+      color: #cdd6f4;
+      border-radius: 8px;
+      padding: 20px 24px;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.6;
+      margin: 16px 0 24px;
+    }
+    code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; }
+    pre code { color: inherit; }
+
+    /* DTS syntax highlighting */
+    .kw  { color: #89b4fa; }   /* keyword / compatible value */
+    .prop{ color: #a6e3a1; }   /* property name */
+    .val { color: #f9e2af; }   /* value */
+    .cmt { color: #6272a4; font-style: italic; }   /* comment */
+    .ref { color: #cba6f7; }   /* phandle reference */
+
+    /* ── Dependency diagram ── */
+    .diagram {
+      background: #1e2030;
+      color: #cdd6f4;
+      border-radius: 8px;
+      padding: 20px 24px;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.8;
+      margin: 16px 0 24px;
+      overflow-x: auto;
+    }
+    .diagram .node  { color: #89b4fa; }
+    .diagram .arrow { color: #6272a4; }
+    .diagram .desc  { color: #a6e3a1; }
+
+    /* ── Memory map ── */
+    .memmap {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 24px;
+      font-size: 13px;
+      font-family: "SFMono-Regular", Consolas, monospace;
+    }
+    .memmap thead tr { background: #16213e; color: #89b4fa; }
+    .memmap thead th { padding: 9px 14px; text-align: left; }
+    .memmap tbody tr:nth-child(odd)  { background: #1e2030; color: #cdd6f4; }
+    .memmap tbody tr:nth-child(even) { background: #252740; color: #cdd6f4; }
+    .memmap tbody td { padding: 8px 14px; }
+
+    /* ── File path ── */
+    .filepath {
+      display: inline-block;
+      background: #e8edf8;
+      color: #0f3460;
+      font-family: monospace;
+      font-size: 13px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid #c0cce8;
+    }
+
+    /* ── Divider ── */
+    hr { border: none; border-top: 1px solid #d0d8f0; margin: 36px 0; }
+
+    /* ── Footer ── */
+    footer {
+      margin-left: 240px;
+      padding: 16px 52px;
+      font-size: 12px;
+      color: #6272a4;
+      border-top: 1px solid #d0d8f0;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════  NAV  ══════════════════════════════ -->
+<nav>
+  <h2>DT Bindings</h2>
+  <ul>
+    <li class="section">概要</li>
+    <li><a href="#overview">はじめに</a></li>
+    <li><a href="#arch">アーキテクチャ</a></li>
+    <li><a href="#memmap">メモリマップ</a></li>
+
+    <li class="section">Mailbox</li>
+    <li><a href="#ipcc-overview">IPCC 概要</a></li>
+    <li><a href="#ipcc-compatible">compatible</a></li>
+    <li><a href="#ipcc-props">プロパティ一覧</a></li>
+    <li><a href="#ipcc-example">DTS 例</a></li>
+
+    <li class="section">Remoteproc</li>
+    <li><a href="#rproc-overview">rcar-rproc 概要</a></li>
+    <li><a href="#rproc-compatible">compatible</a></li>
+    <li><a href="#rproc-props">プロパティ一覧</a></li>
+    <li><a href="#rproc-example-cr7">DTS 例 — CR7</a></li>
+    <li><a href="#rproc-example-cr52">DTS 例 — CR52</a></li>
+
+    <li class="section">完全な DTS</li>
+    <li><a href="#full-dtsi">SoC DTSI</a></li>
+    <li><a href="#full-board">Board DTS</a></li>
+
+    <li class="section">ドライバ</li>
+    <li><a href="#drivers">OOT モジュール</a></li>
+  </ul>
+</nav>
+
+<!-- ═══════════════════════════  MAIN  ═════════════════════════════ -->
+<main>
+
+  <!-- ── Title ── -->
+  <h1>Renesas R-Car S4 (R8A779F0)<br>Device Tree Bindings</h1>
+
+  <p>
+    本ドキュメントは、Renesas R-Car S4 (R8A779F0) 上で動作する
+    <strong>MFIS IPCC Mailbox</strong> および <strong>R-Car Remoteproc</strong>
+    ドライバに必要な Device Tree バインディングを定義します。
+  </p>
+  <p>
+    対応ドライバは <span class="filepath">oot/mailbox/rcar-ipcc.ko</span> および
+    <span class="filepath">oot/remoteproc/rcar_rproc.ko</span> として
+    kernel 6.12 向け Out-of-Tree モジュールで提供されます。
+  </p>
+
+  <!-- ── Architecture ── -->
+  <h2 id="arch">アーキテクチャ</h2>
+
+  <div class="diagram">
+<span class="node">Application Processor (CA55)</span>
+<span class="arrow">  │</span>
+<span class="arrow">  ├──&gt; </span><span class="node">rcar_rproc.ko</span>  <span class="desc">(remoteproc framework)</span>
+<span class="arrow">  │       │  resets    ──&gt;</span> <span class="node">CPG (reset #222)</span>
+<span class="arrow">  │       │  mboxes    ──&gt;</span> <span class="node">rcar-ipcc.ko</span>  <span class="desc">(MFIS IPCC mailbox)</span>
+<span class="arrow">  │       │                    │  interrupts ──&gt;</span> <span class="node">GIC SPI 320 (tx)</span>
+<span class="arrow">  │       │                    │               ──&gt;</span> <span class="node">GIC SPI 322 (rx)</span>
+<span class="arrow">  │       │  syscfg    ──&gt;</span> <span class="node">mfisarembr (syscon)</span>  <span class="desc">(resource table addr)</span>
+<span class="arrow">  │       │  memory    ──&gt;</span> <span class="node">cr52_ram   @ 0xe2100000</span>  <span class="desc">(firmware)</span>
+<span class="arrow">  │                    ──&gt;</span> <span class="node">vdev0vring0 @ 0x42000000</span>  <span class="desc">(VirtIO TX ring)</span>
+<span class="arrow">  │                    ──&gt;</span> <span class="node">vdev0vring1 @ 0x42001000</span>  <span class="desc">(VirtIO RX ring)</span>
+<span class="arrow">  │                    ──&gt;</span> <span class="node">vdev0buffer @ 0x42002000</span>  <span class="desc">(VirtIO buffer)</span>
+<span class="arrow">  │</span>
+<span class="arrow">  └──&gt; </span><span class="node">RPMSG / VirtIO</span>  <span class="arrow">  &lt;══════&gt;</span>  <span class="node">CR52 (Cortex-R52)</span>
+  </div>
+
+  <!-- ── Memory map ── -->
+  <h2 id="memmap">メモリマップ</h2>
+
+  <table class="memmap">
+    <thead>
+      <tr>
+        <th>ラベル</th>
+        <th>ベースアドレス</th>
+        <th>サイズ</th>
+        <th>用途</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>mfis</td>         <td>0xe6260000</td><td>44 KB (0xB000)</td><td>MFIS IPCC レジスタ</td></tr>
+      <tr><td>mfisarembr</td>   <td>0xe6269460</td><td>32 B  (0x20)</td>  <td>リソーステーブルアドレス格納レジスタ</td></tr>
+      <tr><td>cr52_rproc</td>   <td>0xe2100000</td><td>—</td>             <td>CR52 ベースアドレス (DT ノードアドレス)</td></tr>
+      <tr><td>cr52_ram</td>     <td>0xe2100000</td><td>2 MB</td>          <td>CR52 ファームウェア / RAM 予約領域</td></tr>
+      <tr><td>vdev0vring0</td>  <td>0x42000000</td><td>4 KB</td>          <td>VirtIO TX vring (AP → CR52)</td></tr>
+      <tr><td>vdev0vring1</td>  <td>0x42001000</td><td>4 KB</td>          <td>VirtIO RX vring (CR52 → AP)</td></tr>
+      <tr><td>vdev0buffer</td>  <td>0x42002000</td><td>16 KB</td>         <td>VirtIO 共有バッファ</td></tr>
+    </tbody>
+  </table>
+
+  <hr>
+
+  <!-- ════════════════════════  MAILBOX  ════════════════════════════ -->
+  <h2 id="ipcc-overview">Mailbox — renesas,rcar-ipcc <span class="badge badge-new">NEW</span></h2>
+
+  <p>
+    <strong>MFIS IPCC (Inter-Processor Communication Controller)</strong> は、
+    Application Processor (CA55) とリアルタイムプロセッサ間の双方向メッセージング
+    ハードウェアです。R-Car Gen3 / Gen4 に搭載される MFIS ブロックを使用します。
+  </p>
+  <p>
+    バインディングファイル:
+    <span class="filepath">Documentation/devicetree/bindings/mailbox/renesas,rcar-ipcc.yaml</span>
+  </p>
+
+  <h3 id="ipcc-compatible">compatible</h3>
+  <table>
+    <thead><tr><th>値</th><th>対象 SoC</th></tr></thead>
+    <tbody>
+      <tr><td>renesas,rcar-gen3-ipcc</td><td>R-Car Gen3 (H3, M3-W, M3-N など)</td></tr>
+      <tr><td>renesas,rcar-gen4-ipcc</td><td>R-Car Gen4 / S4 (R8A779F0 など)</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="ipcc-props">プロパティ一覧</h3>
+  <table>
+    <thead>
+      <tr><th>プロパティ</th><th>型</th><th>要否</th><th>説明</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>compatible</td><td>string</td>
+        <td><span class="badge badge-required">必須</span></td>
+        <td><code>renesas,rcar-gen3-ipcc</code> または <code>renesas,rcar-gen4-ipcc</code></td>
+      </tr>
+      <tr>
+        <td>reg</td><td>phandle</td>
+        <td><span class="badge badge-required">必須</span></td>
+        <td>MFIS レジスタ領域 (1 エントリ)</td>
+      </tr>
+      <tr>
+        <td>interrupts</td><td>array</td>
+        <td><span class="badge badge-required">必須</span></td>
+        <td>2 本: [0] TX 完了割込み, [1] RX 受信割込み</td>
+      </tr>
+      <tr>
+        <td>interrupt-names</td><td>string-array</td>
+        <td><span class="badge badge-required">必須</span></td>
+        <td><code>"tx"</code>, <code>"rx"</code> の順</td>
+      </tr>
+      <tr>
+        <td>clocks</td><td>phandle</td>
+        <td><span class="badge badge-required">必須</span></td>
+        <td>MFIS 動作クロック (通常 mfis_clk 固定クロック)</td>
+      </tr>
+      <tr>
+        <td>power-domains</td><td>phandle</td>
+        <td><span class="badge badge-required">必須</span></td>
+        <td>電源ドメイン (通常 <code>R8A779F0_PD_ALWAYS_ON</code>)</td>
+      </tr>
+      <tr>
+        <td>#mbox-cells</td><td>u32</td>
+        <td><span class="badge badge-required">必須</span></td>
+        <td>固定値 <code>1</code>。チャネルインデックス (0=TX, 1=RX) を指定する</td>
+      </tr>
+      <tr>
+        <td>#address-cells</td><td>u32</td>
+        <td><span class="badge badge-optional">省略可</span></td>
+        <td>固定値 <code>1</code></td>
+      </tr>
+      <tr>
+        <td>#size-cells</td><td>u32</td>
+        <td><span class="badge badge-optional">省略可</span></td>
+        <td>固定値 <code>0</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="info">
+    <strong>チャネルインデックスについて</strong>
+    <code>#mbox-cells = &lt;1&gt;</code> のため、<code>mboxes</code> プロパティで
+    <code>&lt;&amp;mfis 0&gt;</code> が TX チャネル、<code>&lt;&amp;mfis 1&gt;</code>
+    が RX チャネルを指します。
+  </div>
+
+  <h3 id="ipcc-example">DTS 記述例 (R-Car S4)</h3>
+  <pre><code><span class="cmt">/* 固定クロック — MFIS ブロック用 */</span>
+<span class="prop">mfis_clk</span>: <span class="kw">fixed-clock</span> {
+    <span class="prop">compatible</span> = <span class="val">"fixed-clock"</span>;
+    <span class="prop">#clock-cells</span> = <span class="val">&lt;1&gt;</span>;
+    <span class="prop">clock-frequency</span> = <span class="val">&lt;1000000&gt;</span>;
+    <span class="prop">clock-output-names</span> = <span class="val">"mfis"</span>;
+};
+
+<span class="cmt">/* MFIS IPCC メールボックス */</span>
+<span class="prop">mfis</span>: <span class="kw">mailbox@e6260000</span> {
+    <span class="prop">compatible</span> = <span class="val">"renesas,rcar-gen4-ipcc"</span>;
+    <span class="prop">reg</span> = <span class="val">&lt;0 0xe6260000 0 0xB000&gt;</span>;
+    <span class="prop">interrupts</span> =
+        <span class="val">&lt;GIC_SPI 320 IRQ_TYPE_LEVEL_HIGH&gt;</span>,  <span class="cmt">/* tx */</span>
+        <span class="val">&lt;GIC_SPI 322 IRQ_TYPE_LEVEL_HIGH&gt;</span>;  <span class="cmt">/* rx */</span>
+    <span class="prop">interrupt-names</span> = <span class="val">"tx"</span>, <span class="val">"rx"</span>;
+    <span class="prop">clocks</span> = <span class="ref">&lt;&amp;mfis_clk 0&gt;</span>;
+    <span class="prop">power-domains</span> = <span class="ref">&lt;&amp;sysc R8A779F0_PD_ALWAYS_ON&gt;</span>;
+    <span class="prop">#mbox-cells</span> = <span class="val">&lt;1&gt;</span>;
+};</code></pre>
+
+  <hr>
+
+  <!-- ════════════════════════  REMOTEPROC  ═════════════════════════ -->
+  <h2 id="rproc-overview">Remoteproc — renesas,rcar-rproc <span class="badge badge-updated">UPDATED</span></h2>
+
+  <p>
+    <strong>rcar-rproc</strong> は Renesas R-Car Gen3/Gen4 のリアルタイムプロセッサ
+    (CR7, CR52) をロード・制御する remoteproc ドライバ向けバインディングです。
+    RPMSG/VirtIO 通信には MFIS IPCC メールボックスとの連携が必要です。
+  </p>
+  <p>
+    バインディングファイル:
+    <span class="filepath">Documentation/devicetree/bindings/remoteproc/renesas,rcar-rproc.yaml</span>
+  </p>
+
+  <h3 id="rproc-compatible">compatible</h3>
+  <table>
+    <thead><tr><th>値</th><th>プロセッサ</th><th>世代</th><th>備考</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>renesas,rcar-cr7</td>
+        <td>Cortex-R7</td><td>Gen3</td>
+        <td>Linux が直接ファームウェアをロード。PA==DA (アドレス変換なし)</td>
+      </tr>
+      <tr>
+        <td>renesas,rcar-cr7_optee</td>
+        <td>Cortex-R7</td><td>Gen3</td>
+        <td>OP-TEE 経由でセキュアファームウェアをロード</td>
+      </tr>
+      <tr>
+        <td>renesas,rcar-cr52</td>
+        <td>Cortex-R52</td><td>Gen4 / S4</td>
+        <td>オフセットベースのアドレス変換あり (DA = PA - device_mem_base)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3 id="rproc-props">プロパティ一覧</h3>
+  <table>
+    <thead>
+      <tr><th>プロパティ</th><th>型</th><th>要否</th><th>説明</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>compatible</td><td>string</td>
+        <td><span class="badge badge-required">必須</span></td>
+        <td>上記 compatible 値のいずれか</td>
+      </tr>
+      <tr>
+        <td>resets</td><td>phandle</td>
+        <td><span class="badge badge-required">必須</span></td>
+        <td>CPG リセット制御 (1 エントリ)。例: <code>&lt;&amp;cpg 222&gt;</code></td>
+      </tr>
+      <tr>
+        <td>power-domains</td><td>phandle</td>
+        <td><span class="badge badge-required">必須</span></td>
+        <td>電源ドメイン (1 エントリ)</td>
+      </tr>
+      <tr>
+        <td>memory-region</td><td>phandle-array</td>
+        <td><span class="badge badge-required">必須</span></td>
+        <td>
+          予約メモリ領域リスト (1 個以上)。<br>
+          先頭エントリ: ファームウェア/RAM カーブアウト領域。<br>
+          RPMSG 使用時は続けて VirtIO vring / バッファ領域を指定。
+        </td>
+      </tr>
+      <tr>
+        <td>mboxes</td><td>phandle-array</td>
+        <td><span class="badge badge-optional">省略可</span></td>
+        <td>
+          IPCC メールボックスチャネル 2 本 (TX, RX)。<br>
+          RPMSG/VirtIO 通信を使用する場合は必要。<br>
+          例: <code>&lt;&amp;mfis 0&gt;, &lt;&amp;mfis 1&gt;</code>
+        </td>
+      </tr>
+      <tr>
+        <td>mbox-names</td><td>string-array</td>
+        <td><span class="badge badge-optional">省略可</span></td>
+        <td>mboxes に対応する名前。<code>"tx"</code>, <code>"rx"</code> の順で指定</td>
+      </tr>
+      <tr>
+        <td>rcar,syscfg-rsc-tbl</td><td>phandle-array</td>
+        <td><span class="badge badge-optional">省略可</span></td>
+        <td>
+          リモートプロセッサがブート後にリソーステーブルのアドレスを書き込む
+          syscon レジスタへの参照。<br>
+          形式: <code>&lt;&amp;syscon_node  offset  mask&gt;</code><br>
+          本プロパティが存在する場合、ドライバは DETACHED モードで起動し、
+          すでに動作中のリモートプロセッサへのアタッチが可能になる。
+        </td>
+      </tr>
+      <tr>
+        <td>status</td><td>string</td>
+        <td><span class="badge badge-optional">省略可</span></td>
+        <td>SoC DTSI では <code>"disabled"</code>、ボード DTS で <code>"okay"</code> に設定する</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <strong>CR52 アドレス変換について</strong>
+    CR52 (Gen4) は <code>memory-region</code> の先頭エントリ
+    (<code>cr52_ram</code>) の物理アドレスをデバイスアドレス空間の原点 (0x0) に
+    マップします。ドライバは PA と DA の変換を自動的に処理します。
+  </div>
+
+  <div class="warning">
+    <strong>rcar,syscfg-rsc-tbl の使用条件</strong>
+    本プロパティは <code>mfisarembr</code> syscon ノードへの参照です。
+    リモートプロセッサが既に起動済みで、resource table アドレスがレジスタに
+    書き込まれている場合にのみ有効です。未起動時はドライバが警告を出して
+    通常モードで継続します。
+  </div>
+
+  <h3 id="rproc-example-cr7">DTS 記述例 — CR7 (Gen3)</h3>
+  <pre><code><span class="cmt">/* reserved-memory ノード内 */</span>
+<span class="prop">cr7_ram</span>: <span class="kw">cr7-ram@40040000</span> {
+    <span class="prop">no-map</span>;
+    <span class="prop">reg</span> = <span class="val">&lt;0x0 0x40040000 0x0 0x1fc0000&gt;</span>;
+};
+
+<span class="cmt">/* CR7 リモートプロセッサ */</span>
+<span class="prop">cr7_rproc</span>: <span class="kw">cr7</span> {
+    <span class="prop">compatible</span> = <span class="val">"renesas,rcar-cr7"</span>;
+    <span class="prop">memory-region</span> = <span class="ref">&lt;&amp;cr7_ram&gt;</span>;
+    <span class="prop">power-domains</span> = <span class="ref">&lt;&amp;sysc R8A7795_PD_CR7&gt;</span>;
+    <span class="prop">resets</span> = <span class="ref">&lt;&amp;cpg 222&gt;</span>;
+    <span class="prop">status</span> = <span class="val">"disabled"</span>;
+};</code></pre>
+
+  <h3 id="rproc-example-cr52">DTS 記述例 — CR52 (Gen4 / R-Car S4)</h3>
+  <pre><code><span class="cmt">/* SoC DTSI 側 (r8a779f0.dtsi) */</span>
+<span class="prop">cr52_rproc</span>: <span class="kw">cr52@e2100000</span> {
+    <span class="prop">compatible</span> = <span class="val">"renesas,rcar-cr52"</span>;
+    <span class="prop">power-domains</span> = <span class="ref">&lt;&amp;sysc R8A779F0_PD_ALWAYS_ON&gt;</span>;
+    <span class="prop">resets</span> = <span class="ref">&lt;&amp;cpg 222&gt;</span>;
+    <span class="prop">status</span> = <span class="val">"disabled"</span>;
+};
+
+<span class="cmt">/* ──────────────────────────────────────────────── */</span>
+
+<span class="cmt">/* ボード DTS 側 (r8a779f0-yourboard.dts) */</span>
+<span class="prop">reserved-memory</span> {
+    <span class="prop">#address-cells</span> = <span class="val">&lt;2&gt;</span>;
+    <span class="prop">#size-cells</span> = <span class="val">&lt;2&gt;</span>;
+    <span class="prop">ranges</span>;
+
+    <span class="prop">cr52_ram</span>: <span class="kw">cr52-ram@e2100000</span> {
+        <span class="prop">no-map</span>;
+        <span class="prop">reg</span> = <span class="val">&lt;0x0 0xe2100000 0x0 0x200000&gt;</span>;    <span class="cmt">/* 2 MB */</span>
+    };
+    <span class="prop">vdev0vring0</span>: <span class="kw">vdev0-vring0@42000000</span> {
+        <span class="prop">no-map</span>;
+        <span class="prop">reg</span> = <span class="val">&lt;0x0 0x42000000 0x0 0x1000&gt;</span>;     <span class="cmt">/* 4 KB */</span>
+    };
+    <span class="prop">vdev0vring1</span>: <span class="kw">vdev0-vring1@42001000</span> {
+        <span class="prop">no-map</span>;
+        <span class="prop">reg</span> = <span class="val">&lt;0x0 0x42001000 0x0 0x1000&gt;</span>;     <span class="cmt">/* 4 KB */</span>
+    };
+    <span class="prop">vdev0buffer</span>: <span class="kw">vdev0-buffer@42002000</span> {
+        <span class="prop">no-map</span>;
+        <span class="prop">reg</span> = <span class="val">&lt;0x0 0x42002000 0x0 0x4000&gt;</span>;     <span class="cmt">/* 16 KB */</span>
+    };
+};
+
+<span class="prop">mfisarembr</span>: <span class="kw">syscon@e6269460</span> {
+    <span class="prop">compatible</span> = <span class="val">"simple-bus"</span>, <span class="val">"syscon"</span>, <span class="val">"simple-mfd"</span>;
+    <span class="prop">reg</span> = <span class="val">&lt;0 0xe6269460 0 0x20&gt;</span>;
+};
+
+<span class="cmt">/* CR52 有効化 + RPMSG 設定 */</span>
+&amp;<span class="prop">cr52_rproc</span> {
+    <span class="prop">memory-region</span> = <span class="ref">&lt;&amp;cr52_ram&gt;</span>,
+                    <span class="ref">&lt;&amp;vdev0vring0&gt;</span>,
+                    <span class="ref">&lt;&amp;vdev0vring1&gt;</span>,
+                    <span class="ref">&lt;&amp;vdev0buffer&gt;</span>;
+    <span class="prop">mboxes</span>      = <span class="ref">&lt;&amp;mfis 0&gt;</span>, <span class="ref">&lt;&amp;mfis 1&gt;</span>;
+    <span class="prop">mbox-names</span>  = <span class="val">"tx"</span>, <span class="val">"rx"</span>;
+    <span class="prop">rcar,syscfg-rsc-tbl</span> = <span class="ref">&lt;&amp;mfisarembr 0x0 0xFFFFFFFF&gt;</span>;
+    <span class="prop">status</span> = <span class="val">"okay"</span>;
+};</code></pre>
+
+  <hr>
+
+  <!-- ════════════════════════  FULL DTS  ═══════════════════════════ -->
+  <h2 id="full-dtsi">完全な DTS — SoC DTSI に追加するノード</h2>
+  <p>
+    以下を <span class="filepath">r8a779f0.dtsi</span> の <code>/</code> ルートノード内に追加してください。
+  </p>
+  <pre><code><span class="cmt">/* MFIS 固定クロック */</span>
+<span class="prop">mfis_clk</span>: <span class="kw">fixed-clock</span> {
+    <span class="prop">compatible</span> = <span class="val">"fixed-clock"</span>;
+    <span class="prop">#clock-cells</span> = <span class="val">&lt;1&gt;</span>;
+    <span class="prop">clock-frequency</span> = <span class="val">&lt;1000000&gt;</span>;
+    <span class="prop">clock-output-names</span> = <span class="val">"mfis"</span>;
+};
+
+<span class="cmt">/* CR52 リモートプロセッサ (ベース定義) */</span>
+<span class="prop">cr52_rproc</span>: <span class="kw">cr52@e2100000</span> {
+    <span class="prop">compatible</span> = <span class="val">"renesas,rcar-cr52"</span>;
+    <span class="prop">power-domains</span> = <span class="ref">&lt;&amp;sysc R8A779F0_PD_ALWAYS_ON&gt;</span>;
+    <span class="prop">resets</span> = <span class="ref">&lt;&amp;cpg 222&gt;</span>;
+    <span class="prop">status</span> = <span class="val">"disabled"</span>;
+};
+
+<span class="cmt">/* MFIS IPCC メールボックス */</span>
+<span class="prop">mfis</span>: <span class="kw">mailbox@e6260000</span> {
+    <span class="prop">compatible</span> = <span class="val">"renesas,rcar-gen4-ipcc"</span>;
+    <span class="prop">#mbox-cells</span> = <span class="val">&lt;1&gt;</span>;
+    <span class="prop">#address-cells</span> = <span class="val">&lt;1&gt;</span>;
+    <span class="prop">#size-cells</span> = <span class="val">&lt;0&gt;</span>;
+    <span class="prop">reg</span> = <span class="val">&lt;0 0xe6260000 0 0xB000&gt;</span>;
+    <span class="prop">interrupts</span> =
+        <span class="val">&lt;GIC_SPI 320 IRQ_TYPE_LEVEL_HIGH&gt;</span>,
+        <span class="val">&lt;GIC_SPI 322 IRQ_TYPE_LEVEL_HIGH&gt;</span>;
+    <span class="prop">interrupt-names</span> = <span class="val">"tx"</span>, <span class="val">"rx"</span>;
+    <span class="prop">clocks</span> = <span class="ref">&lt;&amp;mfis_clk 0&gt;</span>;
+    <span class="prop">power-domains</span> = <span class="ref">&lt;&amp;sysc R8A779F0_PD_ALWAYS_ON&gt;</span>;
+};
+
+<span class="cmt">/* MFIS レジスタブロック (リソーステーブルアドレス読み出し用) */</span>
+<span class="prop">mfisarembr</span>: <span class="kw">mfisarembr@e6269460</span> {
+    <span class="prop">compatible</span> = <span class="val">"simple-bus"</span>, <span class="val">"syscon"</span>, <span class="val">"simple-mfd"</span>;
+    <span class="prop">reg</span> = <span class="val">&lt;0 0xe6269460 0 0x20&gt;</span>;
+};</code></pre>
+
+  <h2 id="full-board">完全な DTS — ボード DTS に追加するノード</h2>
+  <p>
+    以下を <span class="filepath">r8a779f0-yourboard.dts</span> に追加してください。
+  </p>
+  <pre><code><span class="cmt">/* 予約メモリ領域 */</span>
+<span class="prop">reserved-memory</span> {
+    <span class="prop">#address-cells</span> = <span class="val">&lt;2&gt;</span>;
+    <span class="prop">#size-cells</span> = <span class="val">&lt;2&gt;</span>;
+    <span class="prop">ranges</span>;
+
+    <span class="prop">cr52_ram</span>: <span class="kw">cr52-ram@e2100000</span> {
+        <span class="prop">no-map</span>;
+        <span class="prop">reg</span> = <span class="val">&lt;0x0 0xe2100000 0x0 0x200000&gt;</span>;
+    };
+    <span class="prop">vdev0vring0</span>: <span class="kw">vdev0-vring0@42000000</span> {
+        <span class="prop">no-map</span>;
+        <span class="prop">reg</span> = <span class="val">&lt;0x0 0x42000000 0x0 0x1000&gt;</span>;
+    };
+    <span class="prop">vdev0vring1</span>: <span class="kw">vdev0-vring1@42001000</span> {
+        <span class="prop">no-map</span>;
+        <span class="prop">reg</span> = <span class="val">&lt;0x0 0x42001000 0x0 0x1000&gt;</span>;
+    };
+    <span class="prop">vdev0buffer</span>: <span class="kw">vdev0-buffer@42002000</span> {
+        <span class="prop">no-map</span>;
+        <span class="prop">reg</span> = <span class="val">&lt;0x0 0x42002000 0x0 0x4000&gt;</span>;
+    };
+};
+
+<span class="cmt">/* CR52 有効化 */</span>
+&amp;<span class="prop">cr52_rproc</span> {
+    <span class="prop">memory-region</span> = <span class="ref">&lt;&amp;cr52_ram&gt;</span>,
+                    <span class="ref">&lt;&amp;vdev0vring0&gt;</span>,
+                    <span class="ref">&lt;&amp;vdev0vring1&gt;</span>,
+                    <span class="ref">&lt;&amp;vdev0buffer&gt;</span>;
+    <span class="prop">mboxes</span>      = <span class="ref">&lt;&amp;mfis 0&gt;</span>, <span class="ref">&lt;&amp;mfis 1&gt;</span>;
+    <span class="prop">mbox-names</span>  = <span class="val">"tx"</span>, <span class="val">"rx"</span>;
+    <span class="prop">rcar,syscfg-rsc-tbl</span> = <span class="ref">&lt;&amp;mfisarembr 0x0 0xFFFFFFFF&gt;</span>;
+    <span class="prop">status</span> = <span class="val">"okay"</span>;
+};</code></pre>
+
+  <hr>
+
+  <!-- ════════════════════════  DRIVERS  ════════════════════════════ -->
+  <h2 id="drivers">OOT ドライバモジュール</h2>
+
+  <table>
+    <thead>
+      <tr><th>モジュール</th><th>ソース</th><th>compatible との対応</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>oot/mailbox/rcar-ipcc.ko</td>
+        <td>oot/mailbox/rcar-ipcc.c</td>
+        <td><code>renesas,rcar-gen3-ipcc</code><br><code>renesas,rcar-gen4-ipcc</code></td>
+      </tr>
+      <tr>
+        <td>oot/remoteproc/rcar_rproc.ko</td>
+        <td>oot/remoteproc/rcar_rproc.c</td>
+        <td><code>renesas,rcar-cr7</code><br><code>renesas,rcar-cr7_optee</code><br><code>renesas,rcar-cr52</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="info">
+    <strong>ロード順序</strong>
+    rcar_rproc.ko は rcar-ipcc.ko (mailbox) に依存します。
+    <code>rcar-ipcc.ko</code> を先にロードしてください。<br>
+    <code>modprobe</code> を使用する場合は依存関係が自動的に解決されます。
+  </div>
+
+</main>
+
+<footer>
+  Renesas R-Car S4 (R8A779F0) — Device Tree Bindings —
+  kernel 6.12 OOT driver documentation
+</footer>
+
+</body>
+</html>
